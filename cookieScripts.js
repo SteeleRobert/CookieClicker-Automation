@@ -94,7 +94,7 @@ function check_tiles(farm, plantId, x_axis, y_axis){
     for (let i = 0; i < x_axis.length; i++) {
         for (let j = 0; j < y_axis.length; j++) {
             var tile = farm.plot[y_axis[j]][x_axis[i]]
-            if (tile[0] != plantId){
+            if (tile[0]-1 != plantId){
                 return false;
             }
         }
@@ -287,19 +287,19 @@ function clean_two_mutition(farm){
 // Three mutition functions
 
 function check_three_mutition(farm, plantId){
-    const x_axis = [1,4];
+    const x_axis = [0,2,4];
     const y_axis = [0,1,2,3,4,5];
     return check_tiles(farm, plantId, x_axis, y_axis);
 };
 
 function plant_three_mutition(farm, plantId){
-    const x_axis = [1,4];
+    const x_axis = [0,2,4];
     const y_axis = [0,1,2,3,4,5];
     plant_tiles(farm, plantId, x_axis, y_axis)
 };
 
 function clean_three_mutition(farm){
-    var x_axis = [0,2,3,5];
+    var x_axis = [1,3,5];
     var y_axis = [0,1,2,3,4,5];
     clean_tiles(farm, x_axis, y_axis);
 };
@@ -308,7 +308,7 @@ function clean_three_mutition(farm){
 
 function check_eight_mutition(farm, plantId){
     var x_axis = [0,2,4];
-    var y_axis = [0,1,2,3,4,5];
+    var y_axis = [1,2,3,4,5];
     if(!check_tiles(farm, plantId, x_axis, y_axis)){
         return false;
     }
@@ -319,7 +319,7 @@ function check_eight_mutition(farm, plantId){
 
 function plant_eight_mutition(farm, plantId){
     var x_axis = [0,2,4];
-    var y_axis = [0,1,2,3,4,5];
+    var y_axis = [1,2,3,4,5];
     plant_tiles(farm, plantId, x_axis, y_axis)
     x_axis = [1,3];
     y_axis = [1,3,5];
@@ -354,7 +354,7 @@ function check_shorter_plant_3x3(farm, plantId){
 
 
 function plant_longer_mutition_3x3(farm, plantId){
-    const x_axis = [0,4];
+    const x_axis = [2];
     const y_axis = [0,1,2,3,4,5];
     plant_tiles(farm, plantId, x_axis, y_axis)
 };
@@ -514,7 +514,7 @@ var plant_breeding ={
         'parent1': 'crumbspore',
         'parent2': 'brownMold'
     },
-    'fooBolete': {
+    'foolBolete': {
         'method': 'Cross',
         'parent1': 'doughshroom',
         'parent2': 'greenRot'
@@ -545,7 +545,7 @@ var plant_breeding ={
     },
     'queenbeet': {
         'method': 'Cross',
-        'parent1': 'chocoRoot',
+        'parent1': 'chocoroot',
         'parent2': 'bakeberry'
     },
     'drowsyfern': {
@@ -576,7 +576,7 @@ var plant_breeding ={
         'parent1': 'tidygrass',
         'parent2': 'elderwort'
     },
-    'juicyQueenbeet': {
+    'queenbeetLump': {
         'method': 'Eight',
         'parent': 'queenbeet',
     }
@@ -676,6 +676,7 @@ var get_all_plants = setInterval(function() {
     // iterate through plant_breeding
     for (var plant in plant_breeding) {
         if(farm.plants[plant].unlocked == 0){
+            
             if(plant_breeding[plant].method == 'Spawn'){
                 spawn();
             }
