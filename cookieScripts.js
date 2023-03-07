@@ -90,6 +90,17 @@ var farming = setInterval(function() {
 
 // Helper functions
 
+function all_seeds_unlocked(){
+    var farm = Game.ObjectsById[2].minigame;
+    // iterate through all seeds in dictionary farm.plants
+    for (var i in farm.plants) {
+        if (farm.plants[i].unlocked == 0){
+            return false;
+        }
+    }
+    return true;
+}
+
 function check_tiles(farm, plantId, x_axis, y_axis){
     for (let i = 0; i < x_axis.length; i++) {
         for (let j = 0; j < y_axis.length; j++) {
@@ -699,6 +710,9 @@ var get_all_plants = setInterval(function() {
         }
     }
     harvest_unlocked(farm)
+    if(all_seeds_unlocked()){
+        farm.convert();
+    }
 }, 1000);
 
 
