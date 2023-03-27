@@ -8,7 +8,7 @@ In the components directory you will find scripts that contain the code that aut
 ### Autoclickers
 There are three auto clickers in this directory: AutoClicker, GoldenCookieClicker, and SugarLumpClicker. These will click the big cookie, golden cookies when they appear on screen, and sugar lumps when the reach maturity
 ### Garden
-They garden automation can be set to two maximize either sugar lumps or cookies. For sugar lump maximization it will unlock every seed in the garden automatically and then sacrifice the garden for 10 sugar lumps (not fully optimzed, only tried to unlock one type of seed at a time). For maximizing cookies it will 
+They garden automation can be set to two maximize either sugar lumps or cookies. For sugar lump maximization it will unlock every seed in the garden automatically and then sacrifice the garden for 10 sugar lumps (not fully optimzed, only tried to unlock one type of seed at a time). For maximizing cookies it will plant bake berries and harvest them when given thresholds are met. With either mode it will unlock the entire garden before picking a strategy. To choose the mode set MAXIMIZE_SUGAR_LUMPS to either true or false.
 ### Stock Market
 Buys and sells stocks at predetermined prices. Buy and sell prices were determined by simulating the stock market at with level 10 banks and iterating through possible buy and sell prices to find a maximum.
 
