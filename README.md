@@ -12,6 +12,10 @@ They garden automation can be set to two maximize either sugar lumps or cookies.
 ### Stock Market
 Buys and sells stocks at predetermined prices. Buy and sell prices were determined by simulating the stock market at with level 10 banks and iterating through possible buy and sell prices to find a maximum.
 
-If your bank is not level 10 you can find your buy and sell points running simulate.py, this will output the id of the stock and the buy and sell points. You just need to copy into your script.
+If your bank is not level 10 you can find your buy and sell points running the following command
+```console
+python simulate.py BANK_LEVEL
+```
+this will output the id of the stock and the buy and sell points. You just need to copy into your script.
 ### Grimoire
 Casts "Force the Hand of Fate" when cookie multiplier is greater than given threshold. It will then sell towers and cast a second "Force the Hand of Fate" if second threshold is met.
