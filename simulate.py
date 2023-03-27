@@ -1,7 +1,8 @@
 import random
+from tqdm import tqdm
 
 
-BANK_LEVEL = 7
+BANK_LEVEL = 10
 
 def resting_value(id, bank_level):
     return 10 * (id + 1) + bank_level - 1
@@ -18,7 +19,7 @@ class stock:
 # make a list of 17 stocks with id 0-16
 stocks = [stock(i, BANK_LEVEL) for i in range(17)]
 
-print(resting_value(0,BANK_LEVEL))
+
 
 # convert this function to python
 def tick(stocks, bank_level, dragonBoost):
@@ -95,7 +96,8 @@ def tick(stocks, bank_level, dragonBoost):
         me.history.append(me.val)
 
 # run the function 100000 times
-for i in range(100000):
+print('Running simulation...')
+for i in tqdm(range(100000)):
     tick(stocks, BANK_LEVEL, 0)
 
 # make a csv for each stock history uising pandas
@@ -104,10 +106,41 @@ df = pd.DataFrame()
 for i in range(17):
     df[f'Stock{i}'] = stocks[i].history
     
-df.to_csv(f'stock.csv', index=False)
+def resting_value(id, bank_level):
+    return 10 * (id + 1) + bank_level - 1
 
-# index of max value in list
-def max_index(lst):
-    return lst.index(max(lst))
+def calc_profit(buy, sell, hist):
+    holding = -1
+    profit = 0
+    for h in hist:
+        if holding == -1:
+            if h < buy:
+                holding = h
+        else:
+            if h > sell:
+                profit += sell - holding
+                holding = -1
+    return profit
 
+def find_best(df, step_size=5):
+    i = 0
+    print('Finding best values, this may take a while...')
+    for col in df.columns:
+        prices = []
+        profits = []
+
+        sell = df[col].max()-step_size
+
+        while(sell > resting_value(i,7)/2):
+            buy = sell-step_size
+            while(buy > df[col].min()):
+                prices.append((buy,sell))
+                profits.append(calc_profit(buy, sell, df[col]))
+                buy -= step_size
+            sell -= step_size
+        values = prices[profits.index(max(profits))]
+        print(f'{i}: [{values[0]}, {values[1]}],')
+        i += 1
+
+find_best(df, 2.5)
 

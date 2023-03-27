@@ -3,37 +3,69 @@ var autoGoldenCookie = setInterval(function() {
   }, 1000);
 
 
-// Cast the Golden Cookie Spell When very buffed
-var autoCastSpells = setInterval(function() {
-    var M=Game.ObjectsById[7].minigame; 
-    if (Game.cookiesPs/Game.unbuffedCps > 300) {
-        if (M.magic == M.magicM) M.castSpell(M.spellsById[1]);
-    }
-    
-}, 1000);
+  var MULTIPLIER_THRESHOLD_1 = 300;
+  var MULTIPLIER_THRESHOLD_2 = 1000;
+  var CLICKER_THRESHOLD_1 = 5;
+  var CLICKER_THRESHOLD_2 = 300;
+  
+  
+  function clicker_plus_multiplier(threshold){
+      if (Game.cookiesPs/Game.unbuffedCps > threshold && Game.computedMouseCps > Game.cookiesPs) {
+          return true;
+      }
+      return false;
+  }
+
+  var autoCastSpells = setInterval(function() {
+      var M=Game.ObjectsById[7].minigame; 
+      var tower = Game.ObjectsById[7];
+      if (Game.cookiesPs/Game.unbuffedCps > MULTIPLIER_THRESHOLD_1 || clicker_plus_multiplier(CLICKER_THRESHOLD_1)) {
+          if (M.magic == M.magicM) {
+              M.castSpell(M.spellsById[1]);
+          }
+      }
+  }, 1000);
+  
+  var sell_cast = setInterval(function() {
+      var M=Game.ObjectsById[7].minigame; 
+      var tower = Game.ObjectsById[7];
+      if (Game.cookiesPs/Game.unbuffedCps > MULTIPLIER_THRESHOLD_2 || clicker_plus_multiplier(CLICKER_THRESHOLD_2)) {
+          console.log("Selling and casting");
+          while (M.magic <= M.magicM) {
+              tower.sell(1);
+              // Update the amount of magic using same function as base game
+              var towers=Math.max(M.parent.amount,1);
+              var lvl=Math.max(M.parent.level,1);
+              M.magicM=Math.floor(4+Math.pow(towers,0.6)+Math.log((towers+(lvl-1)*10)/15+1)*15);
+          }
+          M.castSpell(M.spellsById[1]);
+          while(tower.amount < 750){
+              tower.buy(1);
+          }
+      }
+  }, 1000);
 
 
-// Buys and sells stock when the reach certain prices
 var autoStockMarket = setInterval(function() {
     var S = Game.ObjectsById[5].minigame;
     stock_points = {
-        0: [4.8, 59.8],
-        1: [8.8, 68.8],
-        2: [5.6, 78.2],
-        3: [4.5, 84.5],
-        4: [5.6, 88.1],
-        5: [10.3, 115.3],
-        6: [4.8, 104.8],
-        7: [10.5, 103],
-        8: [10.9, 118.4],
-        9: [9.5, 127],
-        10: [22.5, 122.5],
-        11: [17.2, 124.7],
-        12: [44.3, 131.8],
-        13: [40.5, 135.5],
-        14: [32.3, 144.8],
-        15: [60.6, 138],
-        16: [64.4, 159.3],
+        0: [4.296752808225449, 74.29675280822545],
+        1: [7.101098120866283, 69.60109812086628],
+        2: [6.056790259536228, 76.05679025953623],
+        3: [6.967195132086488, 91.96719513208649],
+        4: [7.693608673653188, 97.69360867365319],
+        5: [4.866925452745392, 84.86692545274539],
+        6: [8.150600348757706, 93.1506003487577],
+        7: [6.253081399632322, 116.25308139963232],
+        8: [7.384369208292071, 119.88436920829207],
+        9: [40.153257584487505, 127.6532575844875],
+        10: [4.593442003495852, 134.59344200349585],
+        11: [27.99021441180213, 142.99021441180213],
+        12: [48.14629756608133, 138.14629756608133],
+        13: [33.07745904023403, 138.07745904023403],
+        14: [74.15591670938426, 144.15591670938426],
+        15: [69.83242089997663, 142.33242089997663],
+        16: [54.58890361704482, 167.08890361704482]
     }
     for (let i = 0; i < 17; i++) {
         if (stock_points[i][0] > S.goodsById[i].val && S.getGoodMaxStock(S.goodsById[i])-S.goodsById[i].stock > 0){
@@ -44,7 +76,7 @@ var autoStockMarket = setInterval(function() {
       }
 }, 60000);
 
-// Clicks when the click frenzy buff is active
+
 var clickOnBuff = setInterval(function() {
     Game.ClickCookie();
 },
@@ -57,35 +89,40 @@ var autoClickSugarLump = setInterval(function() {
         Game.clickLump();
     }
 }, 1000);
+var MAXIMIZE_SUGAR_LUMPS = true;
+var PLANT_THRESHOLD = 5;
+var BAKEBERRY_THRESHOLD_1 = 7;
+var BAKEBERRY_THRESHOLD_2 = 50;
 
-// Plants duke taters and then harvest when there is a good opportunity
-// For juicy Queen Beets plant 21
-var farming = setInterval(function() {
+function farm_bakeberries() {
     var farm = Game.ObjectsById[2].minigame;
-    for (let i = 0; i < 6; i++) {
-        for (let j = 0; j < 6; j++) {
-            var tile = farm.plot[j][i]
-            if (tile[0] == 0){
-                if (Game.cookiesPs/Game.unbuffedCps < 5) {
-                    farm.seedSelected = 8
-                    farm.clickTile(i,j);
+    if(farm.plantsById[8].unlocked == 1){
+        for (let i = 0; i < 6; i++) {
+            for (let j = 0; j < 6; j++) {
+                var tile = farm.plot[j][i]
+                if (tile[0] == 0){
+                    if (Game.cookiesPs/Game.unbuffedCps < PLANT_THRESHOLD) {
+                        farm.seedSelected = 8
+                        farm.clickTile(i,j);
+                    }
                 }
-            }
-            else if (tile[1] > 90){
-                if (Game.cookiesPs/Game.unbuffedCps > 7) {
-                    farm.clickTile(i,j);
+                else if (tile[1] > 90){
+                    if (Game.cookiesPs/Game.unbuffedCps > BAKEBERRY_THRESHOLD_1) {
+                        farm.clickTile(i,j);
+                    }
                 }
-            }
-            else if (tile[1] >= farm.plantsById[tile[0]-1].mature){
-                if (Game.cookiesPs/Game.unbuffedCps > 50) {
-                    farm.clickTile(i,j);
+                else if (tile[1] >= farm.plantsById[tile[0]-1].mature){
+                    if (Game.cookiesPs/Game.unbuffedCps > BAKEBERRY_THRESHOLD_2) {
+                        farm.clickTile(i,j);
+                    }
                 }
             }
         }
     }
-},
-10000
-);
+}
+
+
+
 
 
 // Helper functions
@@ -116,7 +153,7 @@ function check_tiles(farm, plantId, x_axis, y_axis){
 function plant_tiles(farm, plantId, x_axis, y_axis){
     for (let i = 0; i < x_axis.length; i++) {
         for (let j = 0; j < y_axis.length; j++) {
-            if (Game.cookiesPs/Game.unbuffedCps < 5) {
+            if (Game.cookiesPs/Game.unbuffedCps < PLANT_THRESHOLD) {
                 farm.seedSelected = plantId;
                 farm.clickTile(x_axis[i],y_axis[j]);
             }
@@ -445,13 +482,13 @@ var plant_breeding ={
         'method': 'Spawn'
     },
     'crumbspore': {
-        'method': 'Spawn'
+        'method': 'meddleweed'
     },
     'brownMold': {
-        'method': 'Spawn'
+        'method': 'meddleweed'
     },
     'whiteMildew': {
-        'method': 'Spawn'
+        'method': 'meddleweed'
     },
     'thumbcorn': {
         'method': 'Self',
@@ -599,11 +636,47 @@ function spawn() {
     for (let i = 0; i < 6; i++) {
         for (let j = 0; j < 6; j++) {
             var tile = farm.plot[j][i]
-            if (tile[0] != 0 && tile[1] >= farm.plantsById[tile[0]-1].mature && farm.plantsById[tile[0]-1].unlocked == 0){
+            if (tile[0] != 0 && tile[1] >= farm.plantsById[tile[0]-1].mature && (farm.plantsById[tile[0]-1].unlocked == 0 || tile[0]-1 == plant_mapping['meddleweed'])){
+                farm.clickTile(i,j);
+            }
+            if (tile[0] != 0 && tile[0]-1 != plant_mapping['meddleweed'] && farm.plantsById[tile[0]-1].unlocked != 0){
                 farm.clickTile(i,j);
             }
         }
     }
+}
+
+function clean_meddle(){
+    var farm = Game.ObjectsById[2].minigame;
+    change_soil(farm,1);
+    for (let i = 0; i < 6; i++) {
+        for (let j = 0; j < 6; j++) {
+            var tile = farm.plot[j][i]
+            if (tile[0] != 0 && (tile[1] >= farm.plantsById[tile[0]-1].mature || (tile[0]-1 != plant_mapping['meddleweed'] && farm.plantsById[tile[0]-1].unlocked == 1))){
+                farm.clickTile(i,j);
+            }
+        }
+    }
+
+}
+
+function plant_meddle(){
+    var farm = Game.ObjectsById[2].minigame;
+    change_soil(farm,1);
+    for (let i = 0; i < 6; i++) {
+        for (let j = 0; j < 6; j++) {
+            var tile = farm.plot[j][i];
+            if (tile[0] == 0){
+                plant_tiles(farm, plant_mapping['meddleweed'], [i], [j])
+            }
+        }
+    }
+
+}
+
+function meddleweed() {
+    clean_meddle();
+    plant_meddle();
 }
 
 function maximize_soil(farm) {
@@ -691,6 +764,9 @@ var get_all_plants = setInterval(function() {
             if(plant_breeding[plant].method == 'Spawn'){
                 spawn();
             }
+            if(plant_breeding[plant].method == 'meddleweed'){
+                meddleweed();
+            }
             else if(plant_breeding[plant].method == 'Self'){
                 breed_self(plant_breeding[plant].parent);
             }
@@ -711,8 +787,13 @@ var get_all_plants = setInterval(function() {
     }
     harvest_unlocked(farm)
     if(all_seeds_unlocked()){
-        farm.convert();
+        if(MAXIMIZE_SUGAR_LUMPS){
+            farm.convert();
+        }
+        else{
+            farm_bakeberries();
+        }
     }
-}, 1000);
+}, 10000);
 
 
