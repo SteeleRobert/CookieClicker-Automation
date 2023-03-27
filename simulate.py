@@ -1,8 +1,9 @@
 import random
 from tqdm import tqdm
+import sys
 
 
-BANK_LEVEL = 10
+BANK_LEVEL = int(sys.argv[1])
 
 def resting_value(id, bank_level):
     return 10 * (id + 1) + bank_level - 1
@@ -16,12 +17,10 @@ class stock:
         self.dur = 0
         self.history = []
 
-# make a list of 17 stocks with id 0-16
+
 stocks = [stock(i, BANK_LEVEL) for i in range(17)]
 
 
-
-# convert this function to python
 def tick(stocks, bank_level, dragonBoost):
     globD = 0
     globP = random.random()
@@ -100,7 +99,7 @@ print('Running simulation...')
 for i in tqdm(range(100000)):
     tick(stocks, BANK_LEVEL, 0)
 
-# make a csv for each stock history uising pandas
+
 import pandas as pd
 df = pd.DataFrame()
 for i in range(17):
