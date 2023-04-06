@@ -397,7 +397,8 @@ var plant_breeding ={
         'method': 'meddleweed'
     },
     'whiteMildew': {
-        'method': 'meddleweed'
+        'method': 'Self',
+        'parent': 'brownMold'
     },
     'thumbcorn': {
         'method': 'Self',
