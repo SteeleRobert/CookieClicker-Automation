@@ -12,7 +12,7 @@ var autoGoldenCookie = setInterval(function() {
   
   
   function clicker_plus_multiplier(threshold){
-      if (Game.cookiesPs/Game.unbuffedCps > threshold && Game.computedMouseCps > Game.cookiesPs) {
+      if (Game.computedMouseCps > Game.unbuffedCps*threshold*777/4) {
           return true;
       }
       return false;
