@@ -1,87 +1,111 @@
 var autoGoldenCookie = setInterval(function() {
     while (0 < Game.shimmers.length) Game.shimmers[0].pop();
-  }, 1000);
+}, 1000);
 
 
-  var MULTIPLIER_THRESHOLD_1 = 300;
-  var MULTIPLIER_THRESHOLD_2 = 1000;
-  var CLICKER_THRESHOLD_1 = 5;
-  var CLICKER_THRESHOLD_2 = 300;
-  var SL_MULTIPLIER_THRESHOLD = 10000;
-  var SL_CLICKER_THRESHOLD = 1000;
+const MULTIPLIER_THRESHOLD_1 = 300;
+const MULTIPLIER_THRESHOLD_2 = 1000;
+const CLICKER_THRESHOLD_1 = 5;
+const CLICKER_THRESHOLD_2 = 300;
+const SL_MULTIPLIER_THRESHOLD = 10000;
+const SL_CLICKER_THRESHOLD = 1000;
   
-  
-  function clicker_plus_multiplier(threshold){
-      if (Game.computedMouseCps > Game.unbuffedCps*threshold*777/4) {
-          return true;
-      }
-      return false;
-  }
-  
-  var autoCastSpells = setInterval(function() {
-      var M=Game.ObjectsById[7].minigame; 
-      var tower = Game.ObjectsById[7];
-      if (Game.cookiesPs/Game.unbuffedCps > MULTIPLIER_THRESHOLD_1 || clicker_plus_multiplier(CLICKER_THRESHOLD_1)) {
-          if (M.magic == M.magicM) {
-              M.castSpell(M.spellsById[1]);
-          }
-      }
-  }, 1000);
-  
-  var sell_cast = setInterval(function() {
-      var M=Game.ObjectsById[7].minigame; 
-      var tower = Game.ObjectsById[7];
-      if ((Game.cookiesPs/Game.unbuffedCps > MULTIPLIER_THRESHOLD_2 || clicker_plus_multiplier(CLICKER_THRESHOLD_2)) && M.magic > 25) {
-          
-          while (M.magic <= M.magicM) {
-              tower.sell(1);
-              // Update the amount of magic using same function as base game
-              var towers=Math.max(M.parent.amount,1);
-              var lvl=Math.max(M.parent.level,1);
-              M.magicM=Math.floor(4+Math.pow(towers,0.6)+Math.log((towers+(lvl-1)*10)/15+1)*15);
-          }
-          M.castSpell(M.spellsById[1]);
-          while(tower.amount < 750){
-              tower.buy(1);
-          }
-      }
-  }, 1000);
-  
-  var sell_cast = setInterval(function() {
-      var M=Game.ObjectsById[7].minigame; 
-      var tower = Game.ObjectsById[7];
-      if(Game.lumps > 100 && Game.canRefillLump()){
-          if ((Game.cookiesPs/Game.unbuffedCps > SL_MULTIPLIER_THRESHOLD || clicker_plus_multiplier(SL_CLICKER_THRESHOLD)) ) {
-              
-              Game.refillLump(1,function(){
-                  M.magic+=100;
-                  M.magic=Math.min(M.magic,M.magicM);
-                  PlaySound('snd/pop'+Math.floor(Math.random()*3+1)+'.mp3',0.75);
-              });
-              
-              while (M.magic <= M.magicM && M.magic > 25) {
-                  tower.sell(1);
-                  // Update the amount of magic using same function as base game
-                  var towers=Math.max(M.parent.amount,1);
-                  var lvl=Math.max(M.parent.level,1);
-                  M.magicM=Math.floor(4+Math.pow(towers,0.6)+Math.log((towers+(lvl-1)*10)/15+1)*15);
-              }
-              M.castSpell(M.spellsById[1]);
-              
-              while (M.magic <= M.magicM && M.magic > 25) {
-                  tower.sell(1);
-                  // Update the amount of magic using same function as base game
-                  var towers=Math.max(M.parent.amount,1);
-                  var lvl=Math.max(M.parent.level,1);
-                  M.magicM=Math.floor(4+Math.pow(towers,0.6)+Math.log((towers+(lvl-1)*10)/15+1)*15);
-              }
-              M.castSpell(M.spellsById[1]);
-              while(tower.amount < 750){
-                  tower.buy(1);
-              }
-          }
-      }
-  }, 1000);
+
+function clicker_plus_multiplier(threshold){
+    if (Game.computedMouseCps > Game.unbuffedCps*threshold*777/4) {
+        return true;
+    }
+    return false;
+}
+
+var autoCastSpells = setInterval(function() {
+    var M=Game.ObjectsById[7].minigame; 
+    var tower = Game.ObjectsById[7];
+    if (Game.cookiesPs/Game.unbuffedCps > MULTIPLIER_THRESHOLD_1 || clicker_plus_multiplier(CLICKER_THRESHOLD_1)) {
+        if (M.magic == M.magicM) {
+            M.castSpell(M.spellsById[1]);
+        }
+        if(Game.lumpCurrentType == 4 && age>Game.lumpRipeAge){
+            while (M.magic <= M.magicM) {
+                tower.sell(1);
+                // Update the amount of magic using same function as base game
+                var towers=Math.max(M.parent.amount,1);
+                var lvl=Math.max(M.parent.level,1);
+                M.magicM=Math.floor(4+Math.pow(towers,0.6)+Math.log((towers+(lvl-1)*10)/15+1)*15);
+            }
+            M.castSpell(M.spellsById[1]);
+            while(tower.amount < 750){
+                tower.buy(1);
+            }
+            lump_cast();
+            Game.clickLump();
+            lump_cast();
+        }
+    }
+}, 1000);
+
+var sell_cast = setInterval(function() {
+    var M=Game.ObjectsById[7].minigame; 
+    var tower = Game.ObjectsById[7];
+    if ((Game.cookiesPs/Game.unbuffedCps > MULTIPLIER_THRESHOLD_2 || clicker_plus_multiplier(CLICKER_THRESHOLD_2)) && M.magic > 25 ) {
+        
+        while (M.magic <= M.magicM) {
+            tower.sell(1);
+            // Update the amount of magic using same function as base game
+            var towers=Math.max(M.parent.amount,1);
+            var lvl=Math.max(M.parent.level,1);
+            M.magicM=Math.floor(4+Math.pow(towers,0.6)+Math.log((towers+(lvl-1)*10)/15+1)*15);
+        }
+        M.castSpell(M.spellsById[1]);
+        while(tower.amount < 750){
+            tower.buy(1);
+        }
+        console.log("Selling towers");
+
+    }
+}, 1000);
+
+function lump_cast(){
+    var M=Game.ObjectsById[7].minigame; 
+    var tower = Game.ObjectsById[7];
+    Game.refillLump(1,function(){
+        M.magic+=100;
+        M.magic=Math.min(M.magic,M.magicM);
+        PlaySound('snd/pop'+Math.floor(Math.random()*3+1)+'.mp3',0.75);
+    });
+    
+    while (M.magic <= M.magicM && M.magic > 25) {
+        tower.sell(1);
+        // Update the amount of magic using same function as base game
+        var towers=Math.max(M.parent.amount,1);
+        var lvl=Math.max(M.parent.level,1);
+        M.magicM=Math.floor(4+Math.pow(towers,0.6)+Math.log((towers+(lvl-1)*10)/15+1)*15);
+    }
+    M.castSpell(M.spellsById[1]);
+    
+    while (M.magic <= M.magicM && M.magic > 25) {
+        tower.sell(1);
+        // Update the amount of magic using same function as base game
+        var towers=Math.max(M.parent.amount,1);
+        var lvl=Math.max(M.parent.level,1);
+        M.magicM=Math.floor(4+Math.pow(towers,0.6)+Math.log((towers+(lvl-1)*10)/15+1)*15);
+    }
+    M.castSpell(M.spellsById[1]);
+    while(tower.amount < 750){
+        tower.buy(1);
+    }
+}
+
+var sell_cast = setInterval(function() {
+    var M=Game.ObjectsById[7].minigame; 
+    var tower = Game.ObjectsById[7];
+    if(Game.lumps > 100 && Game.canRefillLump()){
+        if ((Game.cookiesPs/Game.unbuffedCps > SL_MULTIPLIER_THRESHOLD || clicker_plus_multiplier(SL_CLICKER_THRESHOLD)) ) {
+            
+            lump_cast();
+        }
+    }
+}, 1000);
 
 
 var autoStockMarket = setInterval(function() {
@@ -114,19 +138,28 @@ var autoStockMarket = setInterval(function() {
       }
 }, 60000);
 
-
+const CLICKER_PER_SECOND = 10;
 var clickOnBuff = setInterval(function() {
     Game.ClickCookie();
 },
-100
+1000/CLICKER_PER_SECOND
 );
 
 var autoClickSugarLump = setInterval(function() {
     var age = Date.now()-Game.lumpT;
-    if (age>Game.lumpRipeAge) {
+    if (age>Game.lumpRipeAge && Game.lumpCurrentType != 4) {
         Game.clickLump();
     }
 }, 1000);
+
+var autoClickSugarLump = setInterval(function() {
+    var age = Date.now()-Game.lumpT;
+    if (age>Game.lumpOverripeAge-30000 && Game.lumpCurrentType != 4) {
+        Game.clickLump();
+    }
+}, 1000);
+
+
 var MAXIMIZE_SUGAR_LUMPS = true;
 var PLANT_THRESHOLD = 5;
 var BAKEBERRY_THRESHOLD_1 = 7;
@@ -193,12 +226,22 @@ function plant_tiles(farm, plantId, x_axis, y_axis){
         for (let j = 0; j < y_axis.length; j++) {
             if (Game.cookiesPs/Game.unbuffedCps < PLANT_THRESHOLD) {
                 farm.seedSelected = plantId;
-                farm.clickTile(x_axis[i],y_axis[j]);
+                // If plant at time is unlocked or tile is empty plant it
+                var tile = farm.plot[y_axis[j]][x_axis[i]]
+                if (tile[0] == 0 || farm.plantsById[tile[0]-1].unlocked == 1){
+                    farm.clickTile(x_axis[i],y_axis[j]);
+                }
             }
         }
     }
     return true;
 };
+
+function clean_all_plants(farm){
+    var x_axis = [0,1,2,3,4,5];
+    var y_axis = [0,1,2,3,4,5];
+    clean_tiles(farm, x_axis, y_axis);
+}
 
 function clean_tiles(farm, x_axis, y_axis){
     for (let i = 0; i < x_axis.length; i++) {
@@ -529,11 +572,25 @@ var plant_breeding ={
         'method': 'Self',
         'parent': 'brownMold'
     },
-    'thumbcorn': {
+    'bakeberry': {
         'method': 'Self',
         'parent': 'bakerWheat'
     },
-    'bakeberry': {
+    'chocoroot': {
+        'method': 'Cross',
+        'parent1': 'bakerWheat',
+        'parent2': 'brownMold'
+    },
+    'queenbeet': {
+        'method': 'Cross',
+        'parent1': 'chocoroot',
+        'parent2': 'bakeberry'
+    },
+    'queenbeetLump': {
+        'method': 'Eight',
+        'parent': 'queenbeet',
+    },
+    'thumbcorn': {
         'method': 'Self',
         'parent': 'bakerWheat'
     },
@@ -606,11 +663,6 @@ var plant_breeding ={
         'parent1': 'doughshroom',
         'parent2': 'greenRot'
     },
-    'chocoroot': {
-        'method': 'Cross',
-        'parent1': 'bakerWheat',
-        'parent2': 'brownMold'
-    },
     'whiteChocoroot': {
         'method': 'Cross',
         'parent1': 'chocoroot',
@@ -629,11 +681,6 @@ var plant_breeding ={
         'method': 'Cross',
         'parent1': 'whiskerbloom',
         'parent2': 'shimmerlily'
-    },
-    'queenbeet': {
-        'method': 'Cross',
-        'parent1': 'chocoroot',
-        'parent2': 'bakeberry'
     },
     'drowsyfern': {
         'method': 'Cross',
@@ -663,10 +710,7 @@ var plant_breeding ={
         'parent1': 'tidygrass',
         'parent2': 'elderwort'
     },
-    'queenbeetLump': {
-        'method': 'Eight',
-        'parent': 'queenbeet',
-    }
+    
 }
 
 function spawn() {
@@ -731,8 +775,8 @@ function breed_self(parent) {
     var farm = Game.ObjectsById[2].minigame;
     maximize_soil(farm)
     parent = plant_mapping[parent];
-    if (!check_self_mutition(farm, parent) && all_unlocked(farm)){ 
-        farm.harvestAll();
+    if (!check_self_mutition(farm, parent)){ 
+        clean_all_plants(farm);
         plant_self_mutition(farm, parent);
     }
     clean_self_mutition(farm)
@@ -744,11 +788,11 @@ function breed_cross(parent1, parent2) {
     new_ordering = get_long_short(parent1, parent2)
     longer = new_ordering[0]
     shorter = new_ordering[1]
-    if (!check_longer_plant(farm, longer) && all_unlocked(farm)){ 
-        farm.harvestAll();
+    if (!check_longer_plant(farm, longer)){ 
+        clean_all_plants(farm);
         plant_longer_mutition(farm, longer);
     }
-    if(!check_shorter_plant(farm, shorter) && all_unlocked(farm)){
+    if(!check_shorter_plant(farm, shorter)){
         clean_short_mutations(farm);
         plant_shorter_mutition(farm, shorter)
     }
@@ -759,8 +803,8 @@ function breed_three(parent) {
     var farm = Game.ObjectsById[2].minigame;
     maximize_soil(farm)
     parent = plant_mapping[parent];
-    if (!check_three_mutition(farm, parent) && all_unlocked(farm)){ 
-        farm.harvestAll();
+    if (!check_three_mutition(farm, parent)){ 
+        clean_all_plants(farm);
         plant_three_mutition(farm, parent);
     }
     clean_three_mutition(farm)
@@ -770,8 +814,8 @@ function breed_eight(parent) {
     var farm = Game.ObjectsById[2].minigame;
     maximize_soil(farm)
     parent = plant_mapping[parent];
-    if (!check_eight_mutition(farm, parent) && all_unlocked(farm)){ 
-        farm.harvestAll();
+    if (!check_eight_mutition(farm, parent)){ 
+        clean_all_plants(farm);
         plant_eight_mutition(farm, parent);
     }
     clean_eight_mutition(farm)
@@ -784,7 +828,7 @@ function breed_three_by_three(parent1, parent2) {
     longer = new_ordering[0]
     shorter = new_ordering[1]
     if (!check_longer_plant_3x3(farm, longer) && all_unlocked(farm)){ 
-        farm.harvestAll();
+        clean_all_plants(farm);
         plant_longer_mutition_3x3(farm, longer);
     }
     if(!check_shorter_plant_3x3(farm, shorter) && all_unlocked(farm)){
@@ -794,11 +838,42 @@ function breed_three_by_three(parent1, parent2) {
     clean_two_mutition_3x3(farm)
 }
 
+// Checks if a plant with a given name is currently in the farm
+function plant_growing(farm, plant){
+    plant = plant_mapping[plant];
+    for (let i = 0; i < 6; i++) {
+        for (let j = 0; j < 6; j++){
+            var tile = farm.plot[j][i];
+            if (tile[0]-1 == plant){
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+function parents_unlocked(farm, parents){
+    if (parents.method == 'Spawn' || parents.method == 'meddleweed'){
+        return true;
+    }
+    else if (parents.method == 'Self' || parents.method == 'Three' || parents.method == 'Eight'){
+        if (farm.plants[parents.parent].unlocked == 1){
+            return true;
+        }
+    }
+    else{
+        if(farm.plants[parents.parent1].unlocked == 1 && farm.plants[parents.parent2].unlocked == 1){
+            return true;
+        }
+    }
+
+}
+
 var get_all_plants = setInterval(function() {
     var farm = Game.ObjectsById[2].minigame;
     // iterate through plant_breeding
     for (var plant in plant_breeding) {
-        if(farm.plants[plant].unlocked == 0){
+        if(farm.plants[plant].unlocked == 0 && !plant_growing(farm, plant) && parents_unlocked(farm, plant_breeding[plant])){
             
             if(plant_breeding[plant].method == 'Spawn'){
                 spawn();

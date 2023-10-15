@@ -1,3 +1,4 @@
+
 var MAXIMIZE_SUGAR_LUMPS = true;
 var PLANT_THRESHOLD = 5;
 var BAKEBERRY_THRESHOLD_1 = 7;
@@ -64,12 +65,22 @@ function plant_tiles(farm, plantId, x_axis, y_axis){
         for (let j = 0; j < y_axis.length; j++) {
             if (Game.cookiesPs/Game.unbuffedCps < PLANT_THRESHOLD) {
                 farm.seedSelected = plantId;
-                farm.clickTile(x_axis[i],y_axis[j]);
+                // If plant at time is unlocked or tile is empty plant it
+                var tile = farm.plot[y_axis[j]][x_axis[i]]
+                if (tile[0] == 0 || farm.plantsById[tile[0]-1].unlocked == 1){
+                    farm.clickTile(x_axis[i],y_axis[j]);
+                }
             }
         }
     }
     return true;
 };
+
+function clean_all_plants(farm){
+    var x_axis = [0,1,2,3,4,5];
+    var y_axis = [0,1,2,3,4,5];
+    clean_tiles(farm, x_axis, y_axis);
+}
 
 function clean_tiles(farm, x_axis, y_axis){
     for (let i = 0; i < x_axis.length; i++) {
@@ -400,11 +411,25 @@ var plant_breeding ={
         'method': 'Self',
         'parent': 'brownMold'
     },
-    'thumbcorn': {
+    'bakeberry': {
         'method': 'Self',
         'parent': 'bakerWheat'
     },
-    'bakeberry': {
+    'chocoroot': {
+        'method': 'Cross',
+        'parent1': 'bakerWheat',
+        'parent2': 'brownMold'
+    },
+    'queenbeet': {
+        'method': 'Cross',
+        'parent1': 'chocoroot',
+        'parent2': 'bakeberry'
+    },
+    'queenbeetLump': {
+        'method': 'Eight',
+        'parent': 'queenbeet',
+    },
+    'thumbcorn': {
         'method': 'Self',
         'parent': 'bakerWheat'
     },
@@ -477,11 +502,6 @@ var plant_breeding ={
         'parent1': 'doughshroom',
         'parent2': 'greenRot'
     },
-    'chocoroot': {
-        'method': 'Cross',
-        'parent1': 'bakerWheat',
-        'parent2': 'brownMold'
-    },
     'whiteChocoroot': {
         'method': 'Cross',
         'parent1': 'chocoroot',
@@ -500,11 +520,6 @@ var plant_breeding ={
         'method': 'Cross',
         'parent1': 'whiskerbloom',
         'parent2': 'shimmerlily'
-    },
-    'queenbeet': {
-        'method': 'Cross',
-        'parent1': 'chocoroot',
-        'parent2': 'bakeberry'
     },
     'drowsyfern': {
         'method': 'Cross',
@@ -534,10 +549,7 @@ var plant_breeding ={
         'parent1': 'tidygrass',
         'parent2': 'elderwort'
     },
-    'queenbeetLump': {
-        'method': 'Eight',
-        'parent': 'queenbeet',
-    }
+    
 }
 
 function spawn() {
@@ -602,8 +614,8 @@ function breed_self(parent) {
     var farm = Game.ObjectsById[2].minigame;
     maximize_soil(farm)
     parent = plant_mapping[parent];
-    if (!check_self_mutition(farm, parent) && all_unlocked(farm)){ 
-        farm.harvestAll();
+    if (!check_self_mutition(farm, parent)){ 
+        clean_all_plants(farm);
         plant_self_mutition(farm, parent);
     }
     clean_self_mutition(farm)
@@ -615,11 +627,11 @@ function breed_cross(parent1, parent2) {
     new_ordering = get_long_short(parent1, parent2)
     longer = new_ordering[0]
     shorter = new_ordering[1]
-    if (!check_longer_plant(farm, longer) && all_unlocked(farm)){ 
-        farm.harvestAll();
+    if (!check_longer_plant(farm, longer)){ 
+        clean_all_plants(farm);
         plant_longer_mutition(farm, longer);
     }
-    if(!check_shorter_plant(farm, shorter) && all_unlocked(farm)){
+    if(!check_shorter_plant(farm, shorter)){
         clean_short_mutations(farm);
         plant_shorter_mutition(farm, shorter)
     }
@@ -630,8 +642,8 @@ function breed_three(parent) {
     var farm = Game.ObjectsById[2].minigame;
     maximize_soil(farm)
     parent = plant_mapping[parent];
-    if (!check_three_mutition(farm, parent) && all_unlocked(farm)){ 
-        farm.harvestAll();
+    if (!check_three_mutition(farm, parent)){ 
+        clean_all_plants(farm);
         plant_three_mutition(farm, parent);
     }
     clean_three_mutition(farm)
@@ -641,8 +653,8 @@ function breed_eight(parent) {
     var farm = Game.ObjectsById[2].minigame;
     maximize_soil(farm)
     parent = plant_mapping[parent];
-    if (!check_eight_mutition(farm, parent) && all_unlocked(farm)){ 
-        farm.harvestAll();
+    if (!check_eight_mutition(farm, parent)){ 
+        clean_all_plants(farm);
         plant_eight_mutition(farm, parent);
     }
     clean_eight_mutition(farm)
@@ -655,7 +667,7 @@ function breed_three_by_three(parent1, parent2) {
     longer = new_ordering[0]
     shorter = new_ordering[1]
     if (!check_longer_plant_3x3(farm, longer) && all_unlocked(farm)){ 
-        farm.harvestAll();
+        clean_all_plants(farm);
         plant_longer_mutition_3x3(farm, longer);
     }
     if(!check_shorter_plant_3x3(farm, shorter) && all_unlocked(farm)){
@@ -665,11 +677,42 @@ function breed_three_by_three(parent1, parent2) {
     clean_two_mutition_3x3(farm)
 }
 
+// Checks if a plant with a given name is currently in the farm
+function plant_growing(farm, plant){
+    plant = plant_mapping[plant];
+    for (let i = 0; i < 6; i++) {
+        for (let j = 0; j < 6; j++){
+            var tile = farm.plot[j][i];
+            if (tile[0]-1 == plant){
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+function parents_unlocked(farm, parents){
+    if (parents.method == 'Spawn' || parents.method == 'meddleweed'){
+        return true;
+    }
+    else if (parents.method == 'Self' || parents.method == 'Three' || parents.method == 'Eight'){
+        if (farm.plants[parents.parent].unlocked == 1){
+            return true;
+        }
+    }
+    else{
+        if(farm.plants[parents.parent1].unlocked == 1 && farm.plants[parents.parent2].unlocked == 1){
+            return true;
+        }
+    }
+
+}
+
 var get_all_plants = setInterval(function() {
     var farm = Game.ObjectsById[2].minigame;
     // iterate through plant_breeding
     for (var plant in plant_breeding) {
-        if(farm.plants[plant].unlocked == 0){
+        if(farm.plants[plant].unlocked == 0 && !plant_growing(farm, plant) && parents_unlocked(farm, plant_breeding[plant])){
             
             if(plant_breeding[plant].method == 'Spawn'){
                 spawn();
