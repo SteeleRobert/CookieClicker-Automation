@@ -26,7 +26,7 @@ var autoCastSpells = setInterval(function() {
             M.castSpell(M.spellsById[1]);
         }
         if(Game.lumpCurrentType == 4 && age>Game.lumpRipeAge){
-            while (M.magic <= M.magicM) {
+            while (M.magic <= M.magicM && tower.amount > 0) {
                 tower.sell(1);
                 // Update the amount of magic using same function as base game
                 var towers=Math.max(M.parent.amount,1);
@@ -34,7 +34,7 @@ var autoCastSpells = setInterval(function() {
                 M.magicM=Math.floor(4+Math.pow(towers,0.6)+Math.log((towers+(lvl-1)*10)/15+1)*15);
             }
             M.castSpell(M.spellsById[1]);
-            while(tower.amount < 750){
+            while(tower.amount < 430){
                 tower.buy(1);
             }
             lump_cast();
@@ -49,7 +49,7 @@ var sell_cast = setInterval(function() {
     var tower = Game.ObjectsById[7];
     if ((Game.cookiesPs/Game.unbuffedCps > MULTIPLIER_THRESHOLD_2 || clicker_plus_multiplier(CLICKER_THRESHOLD_2)) && M.magic > 25 ) {
         
-        while (M.magic <= M.magicM) {
+        while (M.magic <= M.magicM && M.magic > 25 && tower.amount > 0) {
             tower.sell(1);
             // Update the amount of magic using same function as base game
             var towers=Math.max(M.parent.amount,1);
@@ -57,10 +57,9 @@ var sell_cast = setInterval(function() {
             M.magicM=Math.floor(4+Math.pow(towers,0.6)+Math.log((towers+(lvl-1)*10)/15+1)*15);
         }
         M.castSpell(M.spellsById[1]);
-        while(tower.amount < 750){
+        while(tower.amount < 460){
             tower.buy(1);
         }
-        console.log("Selling towers");
 
     }
 }, 1000);
@@ -74,7 +73,7 @@ function lump_cast(){
         PlaySound('snd/pop'+Math.floor(Math.random()*3+1)+'.mp3',0.75);
     });
     
-    while (M.magic <= M.magicM && M.magic > 25) {
+    while (M.magic <= M.magicM && M.magic > 25 && tower.amount > 0) {
         tower.sell(1);
         // Update the amount of magic using same function as base game
         var towers=Math.max(M.parent.amount,1);
@@ -83,7 +82,7 @@ function lump_cast(){
     }
     M.castSpell(M.spellsById[1]);
     
-    while (M.magic <= M.magicM && M.magic > 25) {
+    while (M.magic <= M.magicM && M.magic > 25 && tower.amount > 0) {
         tower.sell(1);
         // Update the amount of magic using same function as base game
         var towers=Math.max(M.parent.amount,1);
@@ -91,19 +90,39 @@ function lump_cast(){
         M.magicM=Math.floor(4+Math.pow(towers,0.6)+Math.log((towers+(lvl-1)*10)/15+1)*15);
     }
     M.castSpell(M.spellsById[1]);
-    while(tower.amount < 750){
+    while(tower.amount < 460){
         tower.buy(1);
     }
 }
 
-var sell_cast = setInterval(function() {
+var activate_lump_cast = setInterval(function() {
     var M=Game.ObjectsById[7].minigame; 
     var tower = Game.ObjectsById[7];
-    if(Game.lumps > 100 && Game.canRefillLump()){
+    if(Game.lumps > 10 && Game.canRefillLump()){
         if ((Game.cookiesPs/Game.unbuffedCps > SL_MULTIPLIER_THRESHOLD || clicker_plus_multiplier(SL_CLICKER_THRESHOLD)) ) {
-            
             lump_cast();
         }
+    }
+}, 1000);
+
+const CLICKER_PER_SECOND = 10;
+var clickOnBuff = setInterval(function() {
+    Game.ClickCookie();
+},
+1000/CLICKER_PER_SECOND
+);
+
+var autoClickSugarLump = setInterval(function() {
+    var age = Date.now()-Game.lumpT;
+    if (age>Game.lumpRipeAge && Game.lumpCurrentType != 4) {
+        Game.clickLump();
+    }
+}, 1000);
+
+var autoClickSugarLump = setInterval(function() {
+    var age = Date.now()-Game.lumpT;
+    if (age>Game.lumpOverripeAge-30000 && Game.lumpCurrentType != 4) {
+        Game.clickLump();
     }
 }, 1000);
 
@@ -138,26 +157,7 @@ var autoStockMarket = setInterval(function() {
       }
 }, 60000);
 
-const CLICKER_PER_SECOND = 10;
-var clickOnBuff = setInterval(function() {
-    Game.ClickCookie();
-},
-1000/CLICKER_PER_SECOND
-);
 
-var autoClickSugarLump = setInterval(function() {
-    var age = Date.now()-Game.lumpT;
-    if (age>Game.lumpRipeAge && Game.lumpCurrentType != 4) {
-        Game.clickLump();
-    }
-}, 1000);
-
-var autoClickSugarLump = setInterval(function() {
-    var age = Date.now()-Game.lumpT;
-    if (age>Game.lumpOverripeAge-30000 && Game.lumpCurrentType != 4) {
-        Game.clickLump();
-    }
-}, 1000);
 
 
 var MAXIMIZE_SUGAR_LUMPS = true;
@@ -192,6 +192,23 @@ function farm_bakeberries() {
     }
 }
 
+function farm_goldenclover() {
+    var farm = Game.ObjectsById[2].minigame;
+    if(farm.plantsById[5].unlocked == 1){
+        for (let i = 0; i < 6; i++) {
+            for (let j = 0; j < 6; j++) {
+                var tile = farm.plot[j][i]
+                if (tile[0] == 0){
+                    if (Game.cookiesPs/Game.unbuffedCps < PLANT_THRESHOLD) {
+                        farm.seedSelected = 5
+                        farm.clickTile(i,j);
+                    }
+                }
+            }
+        }
+    }
+}
+
 
 
 
@@ -213,7 +230,7 @@ function check_tiles(farm, plantId, x_axis, y_axis){
     for (let i = 0; i < x_axis.length; i++) {
         for (let j = 0; j < y_axis.length; j++) {
             var tile = farm.plot[y_axis[j]][x_axis[i]]
-            if (tile[0]-1 != plantId){
+            if (tile[0] == 0 || tile[0]-1 != plantId && farm.plantsById[tile[0]-1].unlocked == 1){
                 return false;
             }
         }
@@ -456,11 +473,11 @@ function plant_eight_mutition(farm, plantId){
 };
 
 function clean_eight_mutition(farm){
-    var x_axis = [0,1,2,3,4,5];
+    var x_axis = [1,3,5];
     var y_axis = [0];
     clean_tiles(farm, x_axis, y_axis);
     var x_axis = [5];
-    var y_axis = [0,1,2,3,4,5];
+    var y_axis = [0,2,4];
     clean_tiles(farm, x_axis, y_axis);
     var x_axis = [1,3];
     var y_axis = [2,4];
@@ -518,6 +535,104 @@ function clean_two_mutition_3x3(farm){
     var y_axis = [0,1,2,3,4,5];
     clean_tiles(farm, x_axis, y_axis);
 }
+
+
+function check_side_longer(farm, plantId){
+    var x_axis = [0,4];
+    var y_axis = [0];
+    if(!check_tiles(farm, plantId, x_axis, y_axis)){
+        return false;
+    }
+    x_axis = [5];
+    y_axis = [3];
+    return check_tiles(farm, plantId, x_axis, y_axis);
+}
+
+function check_side_shorter(farm, plantId){
+    var x_axis = [2];
+    var y_axis = [0];
+    if(!check_tiles(farm, plantId, x_axis, y_axis)){
+        return false;
+    }
+    x_axis = [5];
+    y_axis = [1,5];
+    return check_tiles(farm, plantId, x_axis, y_axis);
+}
+
+function plant_side_longer(farm, plantId){
+    var x_axis = [0,4];
+    var y_axis = [0];
+    plant_tiles(farm, plantId, x_axis, y_axis)
+    x_axis = [5];
+    y_axis = [3];
+    plant_tiles(farm, plantId, x_axis, y_axis)
+}
+
+function plant_side_shorter(farm, plantId){
+    var x_axis = [0,4];
+    var y_axis = [0];
+    var time_to_mature = 1000;
+    for (let i = 0; i < x_axis.length; i++) {
+        for (let j = 0; j < y_axis.length; j++) {
+            var tile = farm.plot[y_axis[j]][x_axis[i]]
+            if (tile[0] != 0) {
+                time_to_mature = Math.min(get_mature_time(tile[0]-1, tile[1]),time_to_mature);
+            }
+        }
+    }
+    x_axis = [5];
+    y_axis = [3];
+    for (let i = 0; i < x_axis.length; i++) {
+        for (let j = 0; j < y_axis.length; j++) {
+            var tile = farm.plot[y_axis[j]][x_axis[i]]
+            if (tile[0] != 0) {
+                time_to_mature = Math.min(get_mature_time(tile[0]-1, tile[1]),time_to_mature);
+            }
+        }
+    }
+    if (time_to_mature < get_mature_time(plantId, 0)) {
+        var x_axis = [2];
+        var y_axis = [0];
+        plant_tiles(farm, plantId, x_axis, y_axis)
+        x_axis = [5];
+        y_axis = [1,5];
+        plant_tiles(farm, plantId, x_axis, y_axis)
+    }
+}
+
+function clean_side_shorter(farm){
+    var x_axis = [2];
+    var y_axis = [0];
+    clean_tiles(farm, x_axis, y_axis);
+    x_axis = [5];
+    y_axis = [1,5];
+    clean_tiles(farm, x_axis, y_axis);
+}
+
+function clean_all_edges(farm){
+    var x_axis = [0,1,2,3,4,5];
+    var y_axis = [0];
+    clean_tiles(farm, x_axis, y_axis);
+    x_axis = [5];
+    y_axis = [0,1,2,3,4,5];
+    clean_tiles(farm, x_axis, y_axis);
+}
+
+
+function side_breed(parent1, parent2) {
+    var farm = Game.ObjectsById[2].minigame;
+    new_ordering = get_long_short(parent1, parent2)
+    longer = new_ordering[0]
+    shorter = new_ordering[1]
+    if (!check_side_longer(farm, longer)){ 
+        clean_all_edges(farm);
+        plant_side_longer(farm, longer);
+    }
+    if(!check_side_shorter(farm, shorter)){
+        clean_side_shorter(farm);
+        plant_side_shorter(farm, shorter)
+    }
+};
 
 
 
@@ -590,13 +705,34 @@ var plant_breeding ={
         'method': 'Eight',
         'parent': 'queenbeet',
     },
+    'elderwort': {
+        'method': 'Cross',
+        'parent1': 'cronerice',
+        'parent2': 'shimmerlily'
+    },
+    'whiteChocoroot': {
+        'method': 'Cross',
+        'parent1': 'chocoroot',
+        'parent2': 'whiteMildew'
+    },
+    'tidygrass': {
+        'method': 'Cross',
+        'parent1': 'whiteChocoroot',
+        'parent2': 'bakerWheat'
+    },
+    'everdaisy': {
+        'method': '3x3',
+        'parent1': 'tidygrass',
+        'parent2': 'elderwort'
+    },
+    'ichorpuff': {
+        'method': 'Cross',
+        'parent1': 'elderwort',
+        'parent2': 'crumbspore'
+    },
     'thumbcorn': {
         'method': 'Self',
         'parent': 'bakerWheat'
-    },
-    'doughshroom': {
-        'method': 'Self',
-        'parent': 'crumbspore'
     },
     'cronerice': {
         'method': 'Cross',
@@ -623,10 +759,9 @@ var plant_breeding ={
         'parent1': 'clover',
         'parent2': 'gildmillet'
     },
-    'elderwort': {
-        'method': 'Cross',
-        'parent1': 'cronerice',
-        'parent2': 'shimmerlily'
+    'doughshroom': {
+        'method': 'Self',
+        'parent': 'crumbspore'
     },
     'greenRot': {
         'method': 'Cross',
@@ -637,6 +772,15 @@ var plant_breeding ={
         'method': 'Cross',
         'parent1': 'brownMold',
         'parent2': 'greenRot'
+    },
+    'drowsyfern': {
+        'method': 'Cross',
+        'parent1': 'keenmoss',
+        'parent2': 'chocoroot'
+    },
+    'duketater': {
+        'method': 'Self',
+        'parent': 'queenbeet'
     },
     'wardlichen': {
         'method': 'Cross',
@@ -663,11 +807,6 @@ var plant_breeding ={
         'parent1': 'doughshroom',
         'parent2': 'greenRot'
     },
-    'whiteChocoroot': {
-        'method': 'Cross',
-        'parent1': 'chocoroot',
-        'parent2': 'whiteMildew'
-    },
     'whiskerbloom': {
         'method': 'Cross',
         'parent1': 'shimmerlily',
@@ -682,35 +821,10 @@ var plant_breeding ={
         'parent1': 'whiskerbloom',
         'parent2': 'shimmerlily'
     },
-    'drowsyfern': {
-        'method': 'Cross',
-        'parent1': 'keenmoss',
-        'parent2': 'chocoroot'
-    },
-    'duketater': {
-        'method': 'Self',
-        'parent': 'queenbeet'
-    },
     'shriekbulb': {
         'method': 'Three',
         'parent': 'duketater',
     },
-    'tidygrass': {
-        'method': 'Cross',
-        'parent1': 'whiteChocoroot',
-        'parent2': 'bakerWheat'
-    },
-    'ichorpuff': {
-        'method': 'Cross',
-        'parent1': 'elderwort',
-        'parent2': 'crumbspore'
-    },
-    'everdaisy': {
-        'method': '3x3',
-        'parent1': 'tidygrass',
-        'parent2': 'elderwort'
-    },
-    
 }
 
 function spawn() {
@@ -763,7 +877,7 @@ function meddleweed() {
 }
 
 function maximize_soil(farm) {
-    if(any_mature(farm) && all_unlocked(farm)){
+    if(any_mature(farm)){// && all_unlocked(farm)){
         change_soil(farm,4);
     }
     else{
@@ -810,6 +924,25 @@ function breed_three(parent) {
     clean_three_mutition(farm)
 }
 
+// Plants breed self or breed cross along the edges of the 8x8 farm
+function side_plant_eight_mutition(farm){
+    // Select plant that is not unlocked
+    for (var plant in plant_breeding) {
+        if(farm.plants[plant].unlocked == 0 && !plant_growing(farm, plant) && parents_unlocked(farm, plant_breeding[plant]) && (plant_breeding[plant].method == 'Self' || plant_breeding[plant].method == 'Cross') && plant != "duketater"){
+            if(plant_breeding[plant].method == 'Self'){
+                side_breed(plant_breeding[plant].parent, plant_breeding[plant].parent);
+            }
+            else if(plant_breeding[plant].method == 'Cross'){
+                side_breed(plant_breeding[plant].parent1, plant_breeding[plant].parent2);
+            }
+            break;
+        }
+    }
+
+}
+
+
+
 function breed_eight(parent) {
     var farm = Game.ObjectsById[2].minigame;
     maximize_soil(farm)
@@ -818,8 +951,11 @@ function breed_eight(parent) {
         clean_all_plants(farm);
         plant_eight_mutition(farm, parent);
     }
+    side_plant_eight_mutition(farm)
     clean_eight_mutition(farm)
 }
+
+
 
 function breed_three_by_three(parent1, parent2) {
     var farm = Game.ObjectsById[2].minigame;
@@ -827,11 +963,11 @@ function breed_three_by_three(parent1, parent2) {
     new_ordering = get_long_short(parent1, parent2)
     longer = new_ordering[0]
     shorter = new_ordering[1]
-    if (!check_longer_plant_3x3(farm, longer) && all_unlocked(farm)){ 
+    if (!check_longer_plant_3x3(farm, longer)){ 
         clean_all_plants(farm);
         plant_longer_mutition_3x3(farm, longer);
     }
-    if(!check_shorter_plant_3x3(farm, shorter) && all_unlocked(farm)){
+    if(!check_shorter_plant_3x3(farm, shorter)){
         clean_short_mutations_3x3(farm);
         plant_shorter_mutition_3x3(farm, shorter)
     }
@@ -872,9 +1008,11 @@ function parents_unlocked(farm, parents){
 var get_all_plants = setInterval(function() {
     var farm = Game.ObjectsById[2].minigame;
     // iterate through plant_breeding
+    var growing = false;
+    
     for (var plant in plant_breeding) {
         if(farm.plants[plant].unlocked == 0 && !plant_growing(farm, plant) && parents_unlocked(farm, plant_breeding[plant])){
-            
+            growing = true;
             if(plant_breeding[plant].method == 'Spawn'){
                 spawn();
             }
@@ -899,15 +1037,21 @@ var get_all_plants = setInterval(function() {
             break;
         }
     }
-    harvest_unlocked(farm)
+    harvest_unlocked(farm);
+    if(!growing && MAXIMIZE_SUGAR_LUMPS){
+        clean_all_plants(farm);
+        maximize_soil(farm);
+    }
     if(all_seeds_unlocked()){
         if(MAXIMIZE_SUGAR_LUMPS){
             farm.convert();
         }
         else{
-            farm_bakeberries();
+            farm_goldenclover();
+            return;
         }
     }
 }, 10000);
+
 
 
