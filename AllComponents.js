@@ -25,6 +25,7 @@ var autoCastSpells = setInterval(function() {
         if (M.magic == M.magicM) {
             M.castSpell(M.spellsById[1]);
         }
+        var age = Date.now()-Game.lumpT;
         if(Game.lumpCurrentType == 4 && age>Game.lumpRipeAge){
             while (M.magic <= M.magicM && tower.amount > 0) {
                 tower.sell(1);
@@ -98,7 +99,7 @@ function lump_cast(){
 var activate_lump_cast = setInterval(function() {
     var M=Game.ObjectsById[7].minigame; 
     var tower = Game.ObjectsById[7];
-    if(Game.lumps > 10 && Game.canRefillLump()){
+    if(Game.lumps > 100 && Game.canRefillLump()){
         if ((Game.cookiesPs/Game.unbuffedCps > SL_MULTIPLIER_THRESHOLD || clicker_plus_multiplier(SL_CLICKER_THRESHOLD)) ) {
             lump_cast();
         }
@@ -1037,13 +1038,16 @@ var get_all_plants = setInterval(function() {
             break;
         }
     }
-    harvest_unlocked(farm);
-    if(!growing && MAXIMIZE_SUGAR_LUMPS){
+    if (!all_seeds_unlocked()){
+        harvest_unlocked(farm);
+    }
+    
+    if(!growing && MAXIMIZE_SUGAR_LUMPS && !all_seeds_unlocked()){
         clean_all_plants(farm);
         maximize_soil(farm);
     }
     if(all_seeds_unlocked()){
-        if(MAXIMIZE_SUGAR_LUMPS){
+        if(MAXIMIZE_SUGAR_LUMPS && Game.lumps < 100){
             farm.convert();
         }
         else{
