@@ -195,6 +195,7 @@ function farm_bakeberries() {
 
 function farm_goldenclover() {
     var farm = Game.ObjectsById[2].minigame;
+    change_soil(farm,2);
     if(farm.plantsById[5].unlocked == 1){
         for (let i = 0; i < 6; i++) {
             for (let j = 0; j < 6; j++) {
@@ -204,6 +205,9 @@ function farm_goldenclover() {
                         farm.seedSelected = 5
                         farm.clickTile(i,j);
                     }
+                }
+                else if (tile[0] != 6){
+                    farm.clickTile(i,j);
                 }
             }
         }
@@ -1047,7 +1051,7 @@ var get_all_plants = setInterval(function() {
         maximize_soil(farm);
     }
     if(all_seeds_unlocked()){
-        if(MAXIMIZE_SUGAR_LUMPS && Game.lumps < 100){
+        if(MAXIMIZE_SUGAR_LUMPS && Game.lumps <= 100){
             farm.convert();
         }
         else{
