@@ -1,5 +1,6 @@
+const CLICKER_PER_SECOND = 10;
 var clickOnBuff = setInterval(function() {
     Game.ClickCookie();
 },
-100
+1000/CLICKER_PER_SECOND
 );

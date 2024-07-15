@@ -3,9 +3,9 @@ var autoGoldenCookie = setInterval(function() {
 }, 1000);
 
 
-const MULTIPLIER_THRESHOLD_1 = 300;
+const MULTIPLIER_THRESHOLD_1 = 1000;
 const MULTIPLIER_THRESHOLD_2 = 1000;
-const CLICKER_THRESHOLD_1 = 5;
+const CLICKER_THRESHOLD_1 = 300;
 const CLICKER_THRESHOLD_2 = 300;
 const SL_MULTIPLIER_THRESHOLD = 10000;
 const SL_CLICKER_THRESHOLD = 1000;
@@ -17,6 +17,17 @@ function clicker_plus_multiplier(threshold){
     }
     return false;
 }
+
+
+var change_elders = setInterval(function() {
+    if ('Frenzy' in Game.buffs && Game.elderWrath == 0){
+        Game.UpgradesById[85].click()
+    }
+    else if (Game.elderWrath > 0 && !('Frenzy' in Game.buffs)){
+        Game.UpgradesById[84].click()
+    }
+}, 1000);
+
 
 var autoCastSpells = setInterval(function() {
     var M=Game.ObjectsById[7].minigame; 
@@ -122,7 +133,7 @@ var autoClickSugarLump = setInterval(function() {
 
 var autoClickSugarLump = setInterval(function() {
     var age = Date.now()-Game.lumpT;
-    if (age>Game.lumpOverripeAge-30000 && Game.lumpCurrentType != 4) {
+    if (age>Game.lumpOverripeAge-30000 && Game.lumpCurrentType == 4) {
         Game.clickLump();
     }
 }, 1000);

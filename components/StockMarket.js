@@ -1,3 +1,4 @@
+
 var autoStockMarket = setInterval(function() {
     var S = Game.ObjectsById[5].minigame;
     stock_points = {

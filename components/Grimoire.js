@@ -1,6 +1,6 @@
-const MULTIPLIER_THRESHOLD_1 = 300;
+const MULTIPLIER_THRESHOLD_1 = 1000;
 const MULTIPLIER_THRESHOLD_2 = 1000;
-const CLICKER_THRESHOLD_1 = 5;
+const CLICKER_THRESHOLD_1 = 300;
 const CLICKER_THRESHOLD_2 = 300;
 const SL_MULTIPLIER_THRESHOLD = 10000;
 const SL_CLICKER_THRESHOLD = 1000;
@@ -13,6 +13,17 @@ function clicker_plus_multiplier(threshold){
     return false;
 }
 
+
+var change_elders = setInterval(function() {
+    if ('Frenzy' in Game.buffs && Game.elderWrath == 0){
+        Game.UpgradesById[85].click()
+    }
+    else if (Game.elderWrath > 0 && !('Frenzy' in Game.buffs)){
+        Game.UpgradesById[84].click()
+    }
+}, 1000);
+
+
 var autoCastSpells = setInterval(function() {
     var M=Game.ObjectsById[7].minigame; 
     var tower = Game.ObjectsById[7];
@@ -20,6 +31,7 @@ var autoCastSpells = setInterval(function() {
         if (M.magic == M.magicM) {
             M.castSpell(M.spellsById[1]);
         }
+        var age = Date.now()-Game.lumpT;
         if(Game.lumpCurrentType == 4 && age>Game.lumpRipeAge){
             while (M.magic <= M.magicM && tower.amount > 0) {
                 tower.sell(1);
@@ -93,7 +105,7 @@ function lump_cast(){
 var activate_lump_cast = setInterval(function() {
     var M=Game.ObjectsById[7].minigame; 
     var tower = Game.ObjectsById[7];
-    if(Game.lumps > 10 && Game.canRefillLump()){
+    if(Game.lumps > 100 && Game.canRefillLump()){
         if ((Game.cookiesPs/Game.unbuffedCps > SL_MULTIPLIER_THRESHOLD || clicker_plus_multiplier(SL_CLICKER_THRESHOLD)) ) {
             lump_cast();
         }
